@@ -5,10 +5,23 @@ on:
     branches: [ main, develop ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      test_type:
+        description: 'Type of tests to run'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+        - all
+        - backend-only
+        - frontend-only
+        - e2e-only
 
 jobs:
   test-backend:
     runs-on: ubuntu-latest
+    if: github.event.inputs.test_type == 'all' || github.event.inputs.test_type == 'backend-only' || github.event.inputs.test_type == ''
     
     steps:
     - uses: actions/checkout@v4
@@ -39,6 +52,7 @@ jobs:
 
   test-frontend:
     runs-on: ubuntu-latest
+    if: github.event.inputs.test_type == 'all' || github.event.inputs.test_type == 'frontend-only' || github.event.inputs.test_type == ''
     
     steps:
     - uses: actions/checkout@v4
@@ -69,6 +83,7 @@ jobs:
 
   e2e-tests:
     runs-on: ubuntu-latest
+    if: github.event.inputs.test_type == 'all' || github.event.inputs.test_type == 'e2e-only' || github.event.inputs.test_type == ''
     
     steps:
     - uses: actions/checkout@v4
@@ -111,6 +126,7 @@ jobs:
   docker-build:
     runs-on: ubuntu-latest
     needs: [test-backend, test-frontend, e2e-tests]
+    if: github.event.inputs.test_type == 'all' || github.event.inputs.test_type == ''
     
     steps:
     - uses: actions/checkout@v4
@@ -148,6 +164,7 @@ jobs:
   security-scan:
     runs-on: ubuntu-latest
     needs: [test-backend, test-frontend]
+    if: github.event.inputs.test_type == 'all' || github.event.inputs.test_type == ''
     
     steps:
     - uses: actions/checkout@v4
@@ -169,7 +186,7 @@ jobs:
   deploy-staging:
     runs-on: ubuntu-latest
     needs: [test-backend, test-frontend, e2e-tests, docker-build]
-    if: github.ref == 'refs/heads/develop'
+    if: (github.ref == 'refs/heads/develop' && (github.event.inputs.test_type == 'all' || github.event.inputs.test_type == ''))
     
     steps:
     - uses: actions/checkout@v4
@@ -187,7 +204,7 @@ jobs:
   deploy-production:
     runs-on: ubuntu-latest
     needs: [test-backend, test-frontend, e2e-tests, docker-build, security-scan]
-    if: github.ref == 'refs/heads/main'
+    if: (github.ref == 'refs/heads/main' && (github.event.inputs.test_type == 'all' || github.event.inputs.test_type == ''))
     
     steps:
     - uses: actions/checkout@v4
