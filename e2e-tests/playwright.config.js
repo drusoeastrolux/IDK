@@ -3,16 +3,22 @@ const { defineConfig, devices } = require('@playwright/test');
 module.exports = defineConfig({
   testDir: './',
   testMatch: '**/*.{test,spec}.{js,ts}',
-  fullyParallel: true,
+  fullyParallel: !process.env.CI,  // Disable parallel in CI for stability
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
+  retries: process.env.CI ? 1 : 0,  // Reduce retries in CI
   workers: process.env.CI ? 1 : undefined,
-  reporter: 'html',
+  reporter: process.env.CI ? 'github' : 'html',
   use: {
     baseURL: 'http://localhost:3000',
-    trace: 'on-first-retry',
+    trace: 'retain-on-failure',  // Only keep traces on failure
+    screenshot: 'only-on-failure',  // Only take screenshots on failure
   },
-  projects: [
+  projects: process.env.CI ? [
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
+    }
+  ] : [  // Only run Chromium in CI for speed
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
@@ -31,6 +37,6 @@ module.exports = defineConfig({
     cwd: '../',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000,
+    timeout: 60 * 1000,  // Reduce timeout to 1 minute
   },
 });
