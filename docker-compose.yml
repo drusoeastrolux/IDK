@@ -1,0 +1,84 @@
+version: '3.8'
+
+services:
+  # Main application service
+  march6-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: march6
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "server/healthcheck.js"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - march6-network
+
+  # Development service with hot reload
+  march6-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: march6-dev
+    ports:
+      - "3000:3000"  # React dev server
+      - "3001:3001"  # Node.js API server
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+    volumes:
+      - ./server:/app/server
+      - ./client:/app/client
+      - /app/server/node_modules
+      - /app/client/node_modules
+    restart: unless-stopped
+    networks:
+      - march6-network
+    profiles:
+      - dev
+
+  # Database service (if needed in the future)
+  # postgres:
+  #   image: postgres:15-alpine
+  #   container_name: march6-db
+  #   environment:
+  #     POSTGRES_DB: march6
+  #     POSTGRES_USER: march6
+  #     POSTGRES_PASSWORD: password
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   networks:
+  #     - march6-network
+  #   profiles:
+  #     - db
+
+  # Redis service (if needed for caching)
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: march6-redis
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis_data:/data
+  #   networks:
+  #     - march6-network
+  #   profiles:
+  #     - cache
+
+networks:
+  march6-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:

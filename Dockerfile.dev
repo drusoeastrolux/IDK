@@ -1,0 +1,28 @@
+# Development Dockerfile with hot reload
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Install nodemon globally for development
+RUN npm install -g nodemon
+
+# Copy package files
+COPY package*.json ./
+COPY server/package*.json ./server/
+COPY client/package*.json ./client/
+
+# Install dependencies
+RUN npm install
+RUN cd server && npm install
+RUN cd client && npm install
+
+# Copy source code
+COPY server/ ./server/
+COPY client/ ./client/
+
+# Expose ports for both React dev server and Node.js API
+EXPOSE 3000
+EXPOSE 3001
+
+# Start both servers with nodemon for hot reload
+CMD ["npm", "run", "dev"]

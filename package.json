@@ -1,0 +1,25 @@
+{
+  "name": "march6-fullstack-app",
+  "version": "1.0.0",
+  "description": "A beautiful full-stack application with comprehensive testing and CI/CD",
+  "main": "server/index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run server:dev\" \"npm run client:dev\"",
+    "server:dev": "cd server && npm run dev",
+    "client:dev": "cd client && npm start",
+    "build": "cd client && npm run build",
+    "test": "npm run test:server && npm run test:client",
+    "test:server": "cd server && npm test",
+    "test:client": "cd client && npm test",
+    "test:e2e": "cd e2e-tests && npx playwright test",
+    "start": "cd server && npm start",
+    "docker:build": "docker build -t march6 .",
+    "docker:run": "docker run -p 3001:3001 --name march6-container march6"
+  },
+  "keywords": ["fullstack", "react", "nodejs", "testing", "docker"],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
