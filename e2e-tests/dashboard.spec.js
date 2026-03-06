@@ -35,11 +35,20 @@ test.describe('March 6 Dashboard E2E Tests', () => {
   test('should open and close add user modal', async ({ page }) => {
     await page.goto('/');
     
-    // Click add user button
-    await page.click('button:has-text("Add User")');
+    // Wait for page to fully load
+    await page.waitForLoadState('networkidle');
     
-    // Check if modal is open
-    await expect(page.locator('text=Add New User')).toBeVisible();
+    // Wait for button to be ready
+    const addButton = page.locator('button:has-text("Add User")');
+    await expect(addButton).toBeVisible();
+    await expect(addButton).toBeEnabled();
+    
+    // Click add user button
+    await addButton.click();
+    
+    // Wait for modal with longer timeout
+    const modalTitle = page.locator('text=Add New User');
+    await expect(modalTitle).toBeVisible({ timeout: 5000 });
     await expect(page.locator('input[name="name"]')).toBeVisible();
     await expect(page.locator('input[name="email"]')).toBeVisible();
     await expect(page.locator('input[name="role"]')).toBeVisible();
@@ -48,44 +57,70 @@ test.describe('March 6 Dashboard E2E Tests', () => {
     await page.click('button:has-text("Cancel")');
     
     // Check if modal is closed
-    await expect(page.locator('text=Add New User')).not.toBeVisible();
+    await expect(modalTitle).not.toBeVisible({ timeout: 5000 });
   });
 
   test('should add a new user successfully', async ({ page }) => {
     await page.goto('/');
     
+    // Wait for page to fully load
+    await page.waitForLoadState('networkidle');
+    
+    // Wait for button to be ready
+    const addButton = page.locator('button:has-text("Add User")');
+    await expect(addButton).toBeVisible();
+    await expect(addButton).toBeEnabled();
+    
     // Click add user button
-    await page.click('button:has-text("Add User")');
+    await addButton.click();
+    
+    // Wait for modal
+    const modalTitle = page.locator('text=Add New User');
+    await expect(modalTitle).toBeVisible({ timeout: 5000 });
     
     // Fill the form
     await page.fill('input[name="name"]', 'E2E Test User');
     await page.fill('input[name="email"]', 'e2e@example.com');
     await page.fill('input[name="role"]', 'QA Engineer');
     
-    // Submit the form
-    await page.click('button:has-text("Add User")');
+    // Submit the form (use specific button index)
+    const submitButtons = page.locator('button:has-text("Add User")');
+    await submitButtons.nth(1).click();
     
     // Check if modal is closed
-    await expect(page.locator('text=Add New User')).not.toBeVisible();
+    await expect(modalTitle).not.toBeVisible({ timeout: 5000 });
     
-    // Check if new user is added (wait for API response)
-    await page.waitForTimeout(1000);
+    // Wait for API response and DOM update
+    await page.waitForTimeout(2000);
     
     // Verify the new user appears in the list
-    await expect(page.locator('text=E2E Test User')).toBeVisible();
+    await expect(page.locator('text=E2E Test User')).toBeVisible({ timeout: 5000 });
   });
 
   test('should validate form inputs', async ({ page }) => {
     await page.goto('/');
     
+    // Wait for page to fully load
+    await page.waitForLoadState('networkidle');
+    
+    // Wait for button to be ready
+    const addButton = page.locator('button:has-text("Add User")');
+    await expect(addButton).toBeVisible();
+    await expect(addButton).toBeEnabled();
+    
     // Click add user button
-    await page.click('button:has-text("Add User")');
+    await addButton.click();
     
-    // Try to submit empty form
-    await page.click('button:has-text("Add User")');
+    // Wait for modal
+    const modalTitle = page.locator('text=Add New User');
+    await expect(modalTitle).toBeVisible({ timeout: 5000 });
     
-    // Check if form validation prevents submission
-    await expect(page.locator('text=Add New User')).toBeVisible();
+    // Try to submit empty form (use specific button index)
+    const submitButtons = page.locator('button:has-text("Add User")');
+    await submitButtons.nth(1).click();
+    
+    // Check if form validation prevents submission (modal should stay open)
+    await expect(modalTitle).toBeVisible({ timeout: 5000 });
   });
 
   test('should have responsive design', async ({ page }) => {
