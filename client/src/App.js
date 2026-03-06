@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Users, TrendingUp, Activity, Plus, Mail, Briefcase, Calendar } from 'lucide-react';
+import { Users, TrendingUp, Activity, Plus, Mail } from 'lucide-react';
 
 function App() {
   const [users, setUsers] = useState([]);
