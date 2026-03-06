@@ -1,7 +1,8 @@
-import { defineConfig, devices } from '@playwright/test';
+const { defineConfig, devices } = require('@playwright/test');
 
-export default defineConfig({
+module.exports = defineConfig({
   testDir: './',
+  testMatch: '**/*.spec.js',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
